@@ -4,6 +4,8 @@ import com.petshop.PetVille.domain.enums.TipoServico;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "servicos")
 @Getter
@@ -29,7 +31,7 @@ public class Servico {
     private String descricao;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private Double preco;
+    private BigDecimal preco;
 
     @Column(nullable = false)
     private Integer duracaoMinutos;

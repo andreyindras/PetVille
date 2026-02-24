@@ -25,17 +25,22 @@ public class Agendamento {
     @JoinColumn(name = "pet_id", nullable = false)
     private Pet pet;
 
+    @ManyToOne
     @JoinColumn(name = "servico_id", nullable = false)
     private Servico servico;
-
-    @Column(nullable = false)
-    private LocalDateTime horarioAgendamento;
-
-    private StatusAgendamento statusAgendamento = StatusAgendamento.PENDENTE;
 
     @ManyToOne
     @JoinColumn(name = "funcionario_id")
     private Usuario funcionarioResponsavel;
+
+    @Column(nullable = false)
+    private LocalDateTime dataHoraInicio;
+
+    @Column(nullable = false)
+    private LocalDateTime dataHoraFim;
+
+    @Enumerated(EnumType.STRING)
+    private StatusAgendamento statusAgendamento = StatusAgendamento.PENDENTE;
 
     private String observacoes;
 }

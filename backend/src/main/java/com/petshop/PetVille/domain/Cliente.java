@@ -20,6 +20,6 @@ public class Cliente {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    private String enderaco;
+    private String endereco;
     private String telefone;
 }
