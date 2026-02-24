@@ -22,7 +22,7 @@ public class Pet {
 
     @Column(nullable = false)
     private String nome;
-    
+
     private String especie;
     private String raca;
     private Integer idade;
