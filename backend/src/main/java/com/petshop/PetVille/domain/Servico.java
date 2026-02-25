@@ -35,4 +35,8 @@ public class Servico {
 
     @Column(nullable = false)
     private Integer duracaoMinutos;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean ativo = true;
 }

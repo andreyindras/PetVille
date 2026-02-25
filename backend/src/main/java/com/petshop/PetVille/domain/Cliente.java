@@ -3,6 +3,10 @@ package com.petshop.PetVille.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "clientes")
 @Getter
@@ -22,4 +26,11 @@ public class Cliente {
 
     private String endereco;
     private String telefone;
+    @Column(nullable = false, unique = true, length = 14)
+    private String cpf;
+    private LocalDateTime dataCadastro;
+    private Boolean ativo = true;
+
+    @OneToMany(mappedBy = "cliente")
+    private List<Pet> pets = new ArrayList<>();
 }

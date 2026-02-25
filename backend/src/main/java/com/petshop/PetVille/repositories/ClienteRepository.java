@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     Optional<Cliente> findByUsuarioId(Long usuarioId);
+    boolean existsByCpf(String cpf);
+    boolean existsByUsuarioId(Long usuarioId);
 }
