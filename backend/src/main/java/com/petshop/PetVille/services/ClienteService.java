@@ -23,7 +23,7 @@ public class ClienteService {
     }
 
     @Transactional
-    public Cliente criarCliente(Long usuarioId, Cliente dadosCliente) {
+    public Cliente cadastrarCliente(Long usuarioId, Cliente dadosCliente) {
         if (dadosCliente.getCpf() == null || dadosCliente.getCpf().trim().isEmpty()) {
             throw new RegraNegocioException("CPF é obrigatório");
         }
