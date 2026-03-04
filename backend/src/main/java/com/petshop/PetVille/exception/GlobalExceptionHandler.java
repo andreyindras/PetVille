@@ -42,11 +42,13 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErroResponse> handleGenerico(Exception ex) {
+    ex.printStackTrace();
+
     return ResponseEntity
             .internalServerError()
             .body(new ErroResponse(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "Ocorreu um erro interno. Tente novamente mais tarde."
+                    "Ocorreu um erro interno: " + ex.getMessage()
             ));
   }
 

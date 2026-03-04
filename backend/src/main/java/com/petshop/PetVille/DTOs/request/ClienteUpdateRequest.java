@@ -6,6 +6,6 @@ public record ClienteUpdateRequest(
 
         String endereco,
 
-        @Pattern(regexp = "\\(\\d{2}\\)\\s?\\d{4,5}-\\d{4}", message = "Telefone inválido")
+        @Pattern(regexp = "\\d{10,11}", message = "Telefone deve conter 10 ou 11 dígitos")
         String telefone
 ) {}

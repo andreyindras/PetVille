@@ -19,11 +19,11 @@ public record ClienteRequest(
         String senha,
 
         @NotBlank(message = "CPF é obrigatório")
-        @Pattern(regexp = "\\d{11}|\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}", message = "CPF inválido")
+        @Pattern(regexp = "\\d{11}", message = "CPF deve conter 11 dígitos")
         String cpf,
 
         String endereco,
 
-        @Pattern(regexp = "\\(\\d{2}\\)\\s?\\d{4,5}-\\d{4}", message = "Telefone inválido")
+        @Pattern(regexp = "\\d{10,11}", message = "Telefone deve conter 10 ou 11 dígitos")
         String telefone
 ) {}
