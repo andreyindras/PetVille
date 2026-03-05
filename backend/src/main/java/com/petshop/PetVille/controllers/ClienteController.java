@@ -1,4 +1,4 @@
-package com.petshop.PetVille.controller;
+package com.petshop.PetVille.controllers;
 
 import com.petshop.PetVille.domain.Cliente;
 import com.petshop.PetVille.domain.Usuario;
