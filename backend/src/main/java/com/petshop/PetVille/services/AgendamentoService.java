@@ -6,6 +6,7 @@ import com.petshop.PetVille.domain.Servico;
 import com.petshop.PetVille.domain.Usuario;
 import com.petshop.PetVille.domain.enums.StatusAgendamento;
 import com.petshop.PetVille.domain.enums.TipoUsuario;
+import com.petshop.PetVille.exception.RecursoNaoEncontradoException;
 import com.petshop.PetVille.exception.RegraNegocioException;
 import com.petshop.PetVille.repositories.AgendamentoRepository;
 import jakarta.transaction.Transactional;
@@ -95,7 +96,7 @@ public class AgendamentoService {
 
     public Agendamento buscarAgendamentoPorId(Long id) {
         return agendamentoRepository.findById(id)
-                .orElseThrow(() -> new RegraNegocioException("Agendamento não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Agendamento não encontrado"));
     }
 
     public List<Agendamento> listarTodosAgendamentos() {

@@ -1,6 +1,7 @@
 package com.petshop.PetVille.services;
 
 import com.petshop.PetVille.domain.Usuario;
+import com.petshop.PetVille.exception.RecursoNaoEncontradoException;
 import com.petshop.PetVille.exception.RegraNegocioException;
 import com.petshop.PetVille.repositories.UsuarioRepository;
 import jakarta.transaction.Transactional;
@@ -42,7 +43,7 @@ public class UsuarioService {
 
     public Usuario buscarUsuarioPorId(Long id) {
         return usuarioRepository.findById(id)
-                .orElseThrow(() -> new RegraNegocioException("Usuário não encontrado"));
+                .orElseThrow(() ->  new RecursoNaoEncontradoException("Usuário não encontrado"));
     }
 
     @Transactional

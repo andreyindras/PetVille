@@ -40,6 +40,13 @@ public class GlobalExceptionHandler {
             ));
   }
 
+  @ExceptionHandler(RecursoNaoEncontradoException.class)
+  public ResponseEntity<ErroResponse> handleNaoEncontrado(RecursoNaoEncontradoException ex) {
+    return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(new ErroResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage()));
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErroResponse> handleGenerico(Exception ex) {
     ex.printStackTrace();

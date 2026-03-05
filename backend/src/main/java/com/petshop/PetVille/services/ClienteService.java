@@ -3,6 +3,7 @@ package com.petshop.PetVille.services;
 import com.petshop.PetVille.domain.Cliente;
 import com.petshop.PetVille.domain.Usuario;
 import com.petshop.PetVille.domain.enums.TipoUsuario;
+import com.petshop.PetVille.exception.RecursoNaoEncontradoException;
 import com.petshop.PetVille.exception.RegraNegocioException;
 import com.petshop.PetVille.repositories.ClienteRepository;
 import jakarta.transaction.Transactional;
@@ -53,12 +54,12 @@ public class ClienteService {
 
     public Cliente buscarClientePorId(Long id) {
         return clienteRepository.findById(id)
-                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
     }
 
     public Cliente buscarClientePorUsuarioId(Long usuarioId) {
         return clienteRepository.findByUsuarioId(usuarioId)
-                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado para este usuário"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado para este usuário"));
     }
 
     public List<Cliente> listarTodosClientes() {

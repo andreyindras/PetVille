@@ -2,6 +2,7 @@ package com.petshop.PetVille.services;
 
 import com.petshop.PetVille.domain.Cliente;
 import com.petshop.PetVille.domain.Pet;
+import com.petshop.PetVille.exception.RecursoNaoEncontradoException;
 import com.petshop.PetVille.exception.RegraNegocioException;
 import com.petshop.PetVille.repositories.PetRepository;
 import jakarta.transaction.Transactional;
@@ -34,7 +35,7 @@ public class PetService {
 
     public Pet buscarPetPorId(Long id) {
         return petRepository.findById(id)
-                .orElseThrow(() -> new RegraNegocioException("Pet não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Pet não encontrado"));
     }
 
     public List<Pet> listarPetsPorCliente(Long clienteId) {

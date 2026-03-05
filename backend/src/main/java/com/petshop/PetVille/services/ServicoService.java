@@ -2,6 +2,7 @@ package com.petshop.PetVille.services;
 
 import com.petshop.PetVille.domain.Servico;
 import com.petshop.PetVille.domain.enums.TipoServico;
+import com.petshop.PetVille.exception.RecursoNaoEncontradoException;
 import com.petshop.PetVille.exception.RegraNegocioException;
 import com.petshop.PetVille.repositories.ServicoRepository;
 import jakarta.transaction.Transactional;
@@ -27,7 +28,7 @@ public class ServicoService {
 
     public Servico buscarServicoPorId(Long id) {
         return servicoRepository.findById(id)
-                .orElseThrow(() -> new RegraNegocioException("Serviço não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Serviço não encontrado"));
     }
 
     public List<Servico> listarTodosServicos() {
