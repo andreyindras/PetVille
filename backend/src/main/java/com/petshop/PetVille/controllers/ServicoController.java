@@ -46,21 +46,30 @@ public class ServicoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ServicoResponse>> listarTodos(
-            @RequestParam(required = false) TipoServico tipo,
-            @RequestParam(required = false, defaultValue = "false") boolean apenasAtivos) {
+    public ResponseEntity<List<ServicoResponse>> listarTodos() {
+        List<ServicoResponse> servicos = servicoService.listarTodosServicos()
+                .stream()
+                .map(ServicoResponse::from)
+                .toList();
+        return ResponseEntity.ok(servicos);
+    }
 
-        List<Servico> servicos;
+    @GetMapping("/ativos")
+    public ResponseEntity<List<ServicoResponse>> listarAtivos() {
+        List<ServicoResponse> servicos = servicoService.listarServicosAtivos()
+                .stream()
+                .map(ServicoResponse::from)
+                .toList();
+        return ResponseEntity.ok(servicos);
+    }
 
-        if (tipo != null) {
-            servicos = servicoService.listarServicosPorTipo(tipo);
-        } else if (apenasAtivos) {
-            servicos = servicoService.listarServicosAtivos();
-        } else {
-            servicos = servicoService.listarTodosServicos();
-        }
-
-        return ResponseEntity.ok(servicos.stream().map(ServicoResponse::from).toList());
+    @GetMapping("/tipo/{tipo}")
+    public ResponseEntity<List<ServicoResponse>> listarPorTipo(@PathVariable TipoServico tipo) {
+        List<ServicoResponse> servicos = servicoService.listarServicosPorTipo(tipo)
+                .stream()
+                .map(ServicoResponse::from)
+                .toList();
+        return ResponseEntity.ok(servicos);
     }
 
     @GetMapping("/{id}")
