@@ -10,7 +10,7 @@ export class AuthService {
   private readonly USER_KEY  = 'petville_user';
 
   private _user  = signal<Usuario | null>(this.loadUser());
-  private _token = signal<string | null>(localStorage.getItem(this.TOKEN_KEY));
+  private _token = signal<string | null>(this.loadToken());
 
   readonly user          = this._user.asReadonly();
   readonly token         = this._token.asReadonly();
@@ -53,6 +53,26 @@ export class AuthService {
 
   getToken(): string | null {
     return this._token();
+  }
+
+  private loadToken(): string | null {
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expMs = payload.exp * 1000; 
+      if (Date.now() >= expMs) {
+        localStorage.removeItem(this.TOKEN_KEY);
+        localStorage.removeItem(this.USER_KEY);
+        return null;
+      }
+      return token;
+    } catch {
+      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.USER_KEY);
+      return null;
+    }
   }
 
   private loadUser(): Usuario | null {
