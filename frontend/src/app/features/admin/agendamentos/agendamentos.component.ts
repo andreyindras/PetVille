@@ -4,50 +4,60 @@ import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { AgendamentosService } from '../../../core/services/api.service';
-import { AuthService } from '../../../core/services/auth.service';
-import { Agendamento } from '../../../shared/models';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { AgendamentosService, FuncionariosService } from '../../../core/services/api.service';
+import { Agendamento, Funcionario, StatusAgendamento } from '../../../shared/models';
 
 @Component({
-  selector: 'app-cancelar-dialog',
+  selector: 'app-atribuir-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatDialogModule],
+  imports: [CommonModule, FormsModule, MatFormFieldModule, MatSelectModule, MatButtonModule, MatDialogModule],
   template: `
-    <h2 mat-dialog-title>Cancelar Agendamento</h2>
+    <h2 mat-dialog-title>Atribuir Funcionário</h2>
     <mat-dialog-content>
       <p style="color:#78716c;font-size:.9rem;margin-bottom:16px">
-        Cancelar <strong>{{ data.ag.nomeServico }}</strong> para <strong>{{ data.ag.nomePet }}</strong>?
+        Agendamento: <strong>{{ data.ag.nomeServico }}</strong> — <strong>{{ data.ag.nomePet }}</strong>
       </p>
       @if (error) { <div class="error-box">{{ error }}</div> }
       <mat-form-field appearance="outline" style="width:100%">
-        <mat-label>Motivo (opcional)</mat-label>
-        <textarea matInput [(ngModel)]="motivo" rows="3"></textarea>
+        <mat-label>Funcionário</mat-label>
+        <mat-select [(ngModel)]="funcId">
+          @for (f of data.funcionarios; track f.id) {
+            <mat-option [value]="f.id">{{ f.nome }}</mat-option>
+          }
+        </mat-select>
       </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Voltar</button>
-      <button mat-flat-button color="warn" (click)="cancelar()" [disabled]="loading">
-        {{ loading ? 'Cancelando...' : 'Cancelar agendamento' }}
+      <button mat-button mat-dialog-close>Cancelar</button>
+      <button mat-flat-button color="primary" (click)="salvar()" [disabled]="loading || !funcId">
+        {{ loading ? 'Salvando...' : 'Atribuir' }}
       </button>
     </mat-dialog-actions>
   `,
   styles: [`.error-box { background:#fee2e2; color:#991b1b; padding:8px 12px; border-radius:8px; font-size:.85rem; margin-bottom:12px; }`]
 })
-export class CancelarDialogComponent {
-  motivo = ''; loading = false; error = '';
+export class AtribuirDialogComponent {
+  funcId: number | null = null;
+  loading = false; error = '';
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: { ag: Agendamento },
-    private ref: MatDialogRef<CancelarDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { ag: Agendamento; funcionarios: Funcionario[] },
+    private ref: MatDialogRef<AtribuirDialogComponent>,
     private svc: AgendamentosService
-  ) {}
-  cancelar() {
+  ) {
+    this.funcId = data.ag.funcionarioId ?? null;
+  }
+  salvar() {
+    if (!this.funcId) return;
     this.loading = true; this.error = '';
-    this.svc.cancelar(this.data.ag.id, this.motivo || 'Cancelado pelo cliente').subscribe({
+    this.svc.atribuirFuncionario(this.data.ag.id, this.funcId).subscribe({
       next: () => this.ref.close(true),
       error: e => { this.error = e.error?.mensagem || 'Erro.'; this.loading = false; }
     });
@@ -55,122 +65,190 @@ export class CancelarDialogComponent {
 }
 
 @Component({
-  selector: 'app-agendamentos-cliente',
+  selector: 'app-agendamentos',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule,
-    MatDialogModule, MatProgressSpinnerModule, MatSnackBarModule],
+  imports: [CommonModule, FormsModule, MatCardModule, MatButtonModule, MatIconModule,
+    MatFormFieldModule, MatInputModule, MatSelectModule, MatTableModule,
+    MatDialogModule, MatProgressSpinnerModule, MatSnackBarModule, MatTooltipModule],
   template: `
-    <div>
+    <div class="page-container">
       <div class="page-header">
-        <h1>Meus Agendamentos</h1>
-        <p>Acompanhe seus serviços agendados</p>
+        <h1>Agendamentos</h1>
+        <p>{{ filtered.length }} agendamento(s) encontrado(s)</p>
       </div>
 
-      @if (loading) {
-        <div style="display:flex;justify-content:center;padding:64px"><mat-spinner diameter="40"/></div>
-      } @else {
-        <section class="section">
-          <h2 class="section-title">Próximos ({{ ativos.length }})</h2>
-          @if (!ativos.length) {
-            <mat-card class="empty-card">
-              <mat-card-content>
-                Nenhum agendamento ativo.
-                <a href="/cliente/novo-agendamento" style="color:#d4621e">Agendar agora</a>
-              </mat-card-content>
-            </mat-card>
-          }
-          @for (ag of ativos; track ag.id) {
-            <mat-card class="ag-card">
-              <mat-card-content>
-                <div class="ag-row">
-                  <div class="date-badge">
-                    <span class="day">{{ ag.dataHoraInicio | date:'dd' }}</span>
-                    <span class="mon">{{ ag.dataHoraInicio | date:'MMM' }}</span>
-                  </div>
-                  <div class="ag-info">
-                    <p class="ag-title">{{ ag.nomeServico }}</p>
-                    <p class="ag-sub">{{ ag.nomePet }} · {{ ag.dataHoraInicio | date:'HH:mm' }}
-                      @if (ag.nomeFuncionario) { · {{ ag.nomeFuncionario }} }
-                    </p>
-                    <span class="status-chip {{ ag.status }}">{{ statusLabel(ag.status) }}</span>
-                  </div>
-                  @if (['PENDENTE','CONFIRMADO'].includes(ag.status)) {
-                    <button mat-stroked-button color="warn" (click)="openCancelar(ag)">
-                      <mat-icon>cancel</mat-icon> Cancelar
-                    </button>
-                  }
-                </div>
-              </mat-card-content>
-            </mat-card>
-          }
-        </section>
+      <div class="card-table">
+        <div class="toolbar-row">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Buscar</mat-label>
+            <input matInput [(ngModel)]="search" (ngModelChange)="filtrar()" placeholder="Pet, serviço ou funcionário..." />
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
 
-        @if (historico.length) {
-          <section class="section">
-            <h2 class="section-title">Histórico</h2>
-            <mat-card>
-              @for (ag of historico.slice(0,10); track ag.id) {
-                <div class="hist-row">
-                  <div>
-                    <p style="font-size:.9rem;font-weight:500;margin:0">{{ ag.nomeServico }} — {{ ag.nomePet }}</p>
-                    <p style="font-size:.8rem;color:#78716c;margin:0">{{ ag.dataHoraInicio | date:"dd/MM/yyyy 'às' HH:mm" }}</p>
-                  </div>
-                  <span class="status-chip {{ ag.status }}">{{ statusLabel(ag.status) }}</span>
-                </div>
-              }
-            </mat-card>
-          </section>
+          <mat-form-field appearance="outline" style="width:180px">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="statusFiltro" (ngModelChange)="filtrar()">
+              <mat-option value="">Todos</mat-option>
+              <mat-option value="PENDENTE">Pendente</mat-option>
+              <mat-option value="CONFIRMADO">Confirmado</mat-option>
+              <mat-option value="EM_ANDAMENTO">Em andamento</mat-option>
+              <mat-option value="CONCLUIDO">Concluído</mat-option>
+              <mat-option value="CANCELADO">Cancelado</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        @if (loading) {
+          <div style="display:flex;justify-content:center;padding:40px"><mat-spinner diameter="36"/></div>
+        } @else {
+          <table mat-table [dataSource]="filtered">
+
+            <ng-container matColumnDef="data">
+              <th mat-header-cell *matHeaderCellDef>Data/Hora</th>
+              <td mat-cell *matCellDef="let a">{{ a.dataHoraInicio | date:'dd/MM/yyyy HH:mm' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="pet">
+              <th mat-header-cell *matHeaderCellDef>Pet</th>
+              <td mat-cell *matCellDef="let a">{{ a.nomePet }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="servico">
+              <th mat-header-cell *matHeaderCellDef>Serviço</th>
+              <td mat-cell *matCellDef="let a">{{ a.nomeServico }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="funcionario">
+              <th mat-header-cell *matHeaderCellDef>Funcionário</th>
+              <td mat-cell *matCellDef="let a">{{ a.nomeFuncionario || '—' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let a">
+                <span class="status-chip {{ a.status }}">{{ statusLabel(a.status) }}</span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="acoes">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let a">
+                <button mat-icon-button matTooltip="Atribuir funcionário"
+                  (click)="openAtribuir(a)" [disabled]="['CONCLUIDO','CANCELADO'].includes(a.status)">
+                  <mat-icon>person_add</mat-icon>
+                </button>
+                @if (a.status === 'PENDENTE') {
+                  <button mat-icon-button matTooltip="Confirmar" (click)="acao(a, 'confirmar')">
+                    <mat-icon style="color:#16a34a">check_circle</mat-icon>
+                  </button>
+                }
+                @if (a.status === 'CONFIRMADO') {
+                  <button mat-icon-button matTooltip="Iniciar" (click)="acao(a, 'iniciar')">
+                    <mat-icon style="color:#1d4ed8">play_circle</mat-icon>
+                  </button>
+                }
+                @if (a.status === 'EM_ANDAMENTO') {
+                  <button mat-icon-button matTooltip="Concluir" (click)="acao(a, 'concluir')">
+                    <mat-icon style="color:#7c3aed">task_alt</mat-icon>
+                  </button>
+                }
+                @if (!['CONCLUIDO','CANCELADO'].includes(a.status)) {
+                  <button mat-icon-button color="warn" matTooltip="Cancelar" (click)="cancelar(a)">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                }
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="cols"></tr>
+            <tr mat-row *matRowDef="let row; columns: cols;"></tr>
+          </table>
+
+          @if (!filtered.length) {
+            <div class="empty-state">
+              <mat-icon>calendar_today</mat-icon>
+              <p>Nenhum agendamento encontrado</p>
+            </div>
+          }
         }
-      }
+      </div>
     </div>
-  `,
-  styles: [`
-    .section { margin-bottom: 32px; }
-    .section-title { font-size:.875rem; font-weight:600; color:#57534e; margin-bottom:12px; }
-    .ag-card { margin-bottom:12px; border-radius:12px !important; border:1px solid #e7e5e4 !important; box-shadow:0 1px 3px rgba(0,0,0,.06) !important; }
-    .empty-card { border-radius:12px !important; border:1px solid #e7e5e4 !important; text-align:center; padding:16px; font-size:.9rem; color:#78716c; }
-    .ag-row { display:flex; align-items:center; gap:16px; }
-    .date-badge { width:48px; height:48px; background:#fdf4ee; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0;
-      .day { font-weight:700; font-size:1.1rem; color:#d4621e; line-height:1; }
-      .mon { font-size:.7rem; color:#e87d35; text-transform:uppercase; }
-    }
-    .ag-info { flex:1; min-width:0; }
-    .ag-title { font-weight:600; color:#1c1917; margin:0 0 2px; }
-    .ag-sub { font-size:.8rem; color:#78716c; margin:0 0 6px; }
-    .hist-row { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid #f5f5f4;
-      &:last-child { border-bottom:none; } }
-  `]
+  `
 })
-export class AgendamentosClienteComponent implements OnInit {
-  ativos: Agendamento[] = [];
-  historico: Agendamento[] = [];
+export class AgendamentosComponent implements OnInit {
+  agendamentos: Agendamento[] = [];
+  filtered: Agendamento[] = [];
+  funcionarios: Funcionario[] = [];
   loading = true;
+  search = '';
+  statusFiltro = '';
+  cols = ['data', 'pet', 'servico', 'funcionario', 'status', 'acoes'];
 
   constructor(
-    private svc: AgendamentosService, private auth: AuthService,
-    private dialog: MatDialog, private snack: MatSnackBar
+    private svc: AgendamentosService,
+    private funcSvc: FuncionariosService,
+    private dialog: MatDialog,
+    private snack: MatSnackBar
   ) {}
 
-  ngOnInit() { this.load(); }
+  ngOnInit() {
+    this.funcSvc.listar().subscribe(f => this.funcionarios = f);
+    this.load();
+  }
 
   load() {
-    const cid = this.auth.user()?.clienteId;
-    if (!cid) return;
-    this.svc.listarPorCliente(cid).subscribe(ags => {
-      this.ativos = ags.filter(a => !['CANCELADO','CONCLUIDO'].includes(a.status))
-        .sort((a,b) => new Date(a.dataHoraInicio).getTime() - new Date(b.dataHoraInicio).getTime());
-      this.historico = ags.filter(a => ['CANCELADO','CONCLUIDO'].includes(a.status))
-        .sort((a,b) => new Date(b.dataHoraInicio).getTime() - new Date(a.dataHoraInicio).getTime());
+    this.loading = true;
+    this.svc.listar().subscribe(data => {
+      this.agendamentos = data.sort((a, b) =>
+        new Date(b.dataHoraInicio).getTime() - new Date(a.dataHoraInicio).getTime()
+      );
+      this.filtrar();
       this.loading = false;
     });
   }
 
-  openCancelar(ag: Agendamento) {
-    const ref = this.dialog.open(CancelarDialogComponent, { width: '420px', data: { ag } });
-    ref.afterClosed().subscribe(r => { if (r) { this.snack.open('Agendamento cancelado!', '', { duration: 2500 }); this.load(); } });
+  filtrar() {
+    const q = this.search.toLowerCase();
+    this.filtered = this.agendamentos.filter(a => {
+      const matchSearch = !q ||
+        a.nomePet.toLowerCase().includes(q) ||
+        a.nomeServico.toLowerCase().includes(q) ||
+        (a.nomeFuncionario ?? '').toLowerCase().includes(q);
+      const matchStatus = !this.statusFiltro || a.status === this.statusFiltro;
+      return matchSearch && matchStatus;
+    });
+  }
+
+  openAtribuir(ag: Agendamento) {
+    const ref = this.dialog.open(AtribuirDialogComponent, {
+      width: '400px',
+      data: { ag, funcionarios: this.funcionarios }
+    });
+    ref.afterClosed().subscribe(r => {
+      if (r) { this.snack.open('Funcionário atribuído!', '', { duration: 2500 }); this.load(); }
+    });
+  }
+
+  acao(ag: Agendamento, tipo: 'confirmar' | 'iniciar' | 'concluir') {
+    const req$ = tipo === 'confirmar' ? this.svc.confirmar(ag.id)
+      : tipo === 'iniciar' ? this.svc.iniciar(ag.id)
+      : this.svc.concluir(ag.id);
+    const labels = { confirmar: 'Confirmado!', iniciar: 'Iniciado!', concluir: 'Concluído!' };
+    req$.subscribe(() => { this.snack.open(labels[tipo], '', { duration: 2500 }); this.load(); });
+  }
+
+  cancelar(ag: Agendamento) {
+    if (!confirm(`Cancelar agendamento de ${ag.nomeServico} para ${ag.nomePet}?`)) return;
+    this.svc.cancelar(ag.id, 'Cancelado pelo admin').subscribe(() => {
+      this.snack.open('Cancelado!', '', { duration: 2500 }); this.load();
+    });
   }
 
   statusLabel(s: string) {
-    return ({ PENDENTE:'Pendente', CONFIRMADO:'Confirmado', EM_ANDAMENTO:'Em andamento', CONCLUIDO:'Concluído', CANCELADO:'Cancelado' } as any)[s] ?? s;
+    const m: Record<string, string> = {
+      PENDENTE: 'Pendente', CONFIRMADO: 'Confirmado', EM_ANDAMENTO: 'Em andamento',
+      CONCLUIDO: 'Concluído', CANCELADO: 'Cancelado'
+    };
+    return m[s] ?? s;
   }
 }
