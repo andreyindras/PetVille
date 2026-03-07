@@ -28,6 +28,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/clientes").permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/api/clientes/me").hasAnyRole("ADMIN", "FUNCIONARIO", "CLIENTE")
+                        .requestMatchers(HttpMethod.PUT, "/api/clientes/me").hasRole("CLIENTE")
+
                         .requestMatchers(HttpMethod.POST,   "/api/funcionarios").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/funcionarios/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH,  "/api/funcionarios/*/promover").hasRole("ADMIN")
@@ -36,7 +39,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT,    "/api/servicos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/servicos/**").hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.GET,   "/api/agendamentos/**").hasAnyRole("ADMIN", "FUNCIONARIO")
+                        .requestMatchers(HttpMethod.GET,   "/api/agendamentos/**").hasAnyRole("ADMIN", "FUNCIONARIO", "CLIENTE")
                         .requestMatchers(HttpMethod.PATCH, "/api/agendamentos/*/confirmar").hasAnyRole("ADMIN", "FUNCIONARIO")
                         .requestMatchers(HttpMethod.PATCH, "/api/agendamentos/*/iniciar").hasAnyRole("ADMIN", "FUNCIONARIO")
                         .requestMatchers(HttpMethod.PATCH, "/api/agendamentos/*/concluir").hasAnyRole("ADMIN", "FUNCIONARIO")

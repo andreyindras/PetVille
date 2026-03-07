@@ -29,14 +29,9 @@ public class ClienteService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Cria usuario + cliente em uma única transação.
-     * Evita problemas de flush/commit entre transações separadas.
-     */
     @Transactional
     public Cliente registrarNovoCliente(String nome, String email, String senha,
                                         String cpf, String telefone, String endereco) {
-        // Validações
         if (usuarioRepository.existsByEmail(email)) {
             throw new RegraNegocioException("Email já cadastrado");
         }
@@ -47,7 +42,6 @@ public class ClienteService {
             throw new RegraNegocioException("CPF já cadastrado no sistema");
         }
 
-        // Cria e persiste o Usuario dentro da mesma transação
         Usuario usuario = Usuario.builder()
                 .nome(nome)
                 .email(email)
@@ -57,7 +51,6 @@ public class ClienteService {
                 .build();
         usuario = usuarioRepository.save(usuario);
 
-        // Cria e persiste o Cliente linkado ao Usuario
         Cliente cliente = Cliente.builder()
                 .usuario(usuario)
                 .cpf(cpf)
@@ -104,6 +97,11 @@ public class ClienteService {
     public Cliente buscarClientePorId(Long id) {
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
+    }
+
+    public Cliente buscarClientePorEmail(String email) {
+        return clienteRepository.findByUsuarioEmail(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado para este email"));
     }
 
     public Cliente buscarClientePorUsuarioId(Long usuarioId) {

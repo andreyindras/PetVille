@@ -7,6 +7,7 @@ import com.petshop.PetVille.DTOs.response.ClienteResponse;
 import com.petshop.PetVille.services.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -25,7 +26,6 @@ public class ClienteController {
 
     @PostMapping
     public ResponseEntity<ClienteResponse> cadastrar(@RequestBody @Valid ClienteRequest request) {
-        // Tudo em uma única transação: cria Usuario + Cliente juntos
         Cliente criado = clienteService.registrarNovoCliente(
                 request.nome(),
                 request.email(),
@@ -34,14 +34,19 @@ public class ClienteController {
                 request.telefone(),
                 request.endereco()
         );
-
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(criado.getId())
                 .toUri();
-
         return ResponseEntity.created(location).body(ClienteResponse.from(criado));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ClienteResponse> buscarMe(Authentication authentication) {
+        String email = authentication.getName();
+        Cliente cliente = clienteService.buscarClientePorEmail(email);
+        return ResponseEntity.ok(ClienteResponse.from(cliente));
     }
 
     @GetMapping

@@ -57,7 +57,9 @@ export class ServicosService {
 export class AgendamentosService {
   constructor(private http: HttpClient) {}
   listar()                         { return this.http.get<Agendamento[]>('/api/agendamentos'); }
-  listarPorCliente(cid: number)    { return this.http.get<Agendamento[]>(`/api/agendamentos/cliente/${cid}`); }
+
+  listarPorPet(petId: number)      { return this.http.get<Agendamento[]>(`/api/agendamentos/pet/${petId}`); }
+
   listarPorStatus(s: StatusAgendamento) { return this.http.get<Agendamento[]>(`/api/agendamentos/status/${s}`); }
   buscar(id: number)               { return this.http.get<Agendamento>(`/api/agendamentos/${id}`); }
   criar(d: AgendamentoRequest)     { return this.http.post<Agendamento>('/api/agendamentos', d); }

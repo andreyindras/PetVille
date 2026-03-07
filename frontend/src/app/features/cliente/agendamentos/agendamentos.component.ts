@@ -1,6 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,7 +10,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { AgendamentosService } from '../../../core/services/api.service';
+import { forkJoin, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { AgendamentosService, PetsService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Agendamento } from '../../../shared/models';
 
@@ -57,7 +60,7 @@ export class CancelarDialogComponent {
 @Component({
   selector: 'app-agendamentos-cliente',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule,
+  imports: [CommonModule, RouterModule, MatCardModule, MatButtonModule, MatIconModule,
     MatDialogModule, MatProgressSpinnerModule, MatSnackBarModule],
   template: `
     <div>
@@ -75,7 +78,7 @@ export class CancelarDialogComponent {
             <mat-card class="empty-card">
               <mat-card-content>
                 Nenhum agendamento ativo.
-                <a href="/cliente/novo-agendamento" style="color:#d4621e">Agendar agora</a>
+                <a routerLink="/cliente/novo-agendamento" style="color:#d4621e">Agendar agora</a>
               </mat-card-content>
             </mat-card>
           }
@@ -121,6 +124,14 @@ export class CancelarDialogComponent {
             </mat-card>
           </section>
         }
+
+        @if (!ativos.length && !historico.length) {
+          <div class="zero-state">
+            <mat-icon>calendar_today</mat-icon>
+            <p>Você ainda não tem agendamentos.</p>
+            <a routerLink="/cliente/novo-agendamento" mat-flat-button color="primary">Fazer primeiro agendamento</a>
+          </div>
+        }
       }
     </div>
   `,
@@ -130,15 +141,24 @@ export class CancelarDialogComponent {
     .ag-card { margin-bottom:12px; border-radius:12px !important; border:1px solid #e7e5e4 !important; box-shadow:0 1px 3px rgba(0,0,0,.06) !important; }
     .empty-card { border-radius:12px !important; border:1px solid #e7e5e4 !important; text-align:center; padding:16px; font-size:.9rem; color:#78716c; }
     .ag-row { display:flex; align-items:center; gap:16px; }
-    .date-badge { width:48px; height:48px; background:#fdf4ee; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0;
-      .day { font-weight:700; font-size:1.1rem; color:#d4621e; line-height:1; }
-      .mon { font-size:.7rem; color:#e87d35; text-transform:uppercase; }
-    }
+    .date-badge { width:48px; height:48px; background:#fdf4ee; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; }
+    .day { font-weight:700; font-size:1.1rem; color:#d4621e; line-height:1; }
+    .mon { font-size:.7rem; color:#e87d35; text-transform:uppercase; }
     .ag-info { flex:1; min-width:0; }
     .ag-title { font-weight:600; color:#1c1917; margin:0 0 2px; }
     .ag-sub { font-size:.8rem; color:#78716c; margin:0 0 6px; }
-    .hist-row { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid #f5f5f4;
-      &:last-child { border-bottom:none; } }
+    .hist-row { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid #f5f5f4; }
+    .hist-row:last-child { border-bottom:none; }
+    .zero-state { text-align:center; padding:64px 32px; color:#a8a29e; }
+    .zero-state mat-icon { font-size:48px; width:48px; height:48px; margin-bottom:12px; display:block; }
+    .zero-state p { margin-bottom:16px; }
+    /* status chips */
+    .status-chip { display:inline-block; padding:3px 10px; border-radius:999px; font-size:.75rem; font-weight:500; }
+    .status-chip.PENDENTE     { background:#fef9c3; color:#854d0e; }
+    .status-chip.CONFIRMADO   { background:#dbeafe; color:#1e40af; }
+    .status-chip.EM_ANDAMENTO { background:#fde68a; color:#92400e; }
+    .status-chip.CONCLUIDO    { background:#dcfce7; color:#166534; }
+    .status-chip.CANCELADO    { background:#fee2e2; color:#991b1b; }
   `]
 })
 export class AgendamentosClienteComponent implements OnInit {
@@ -147,30 +167,55 @@ export class AgendamentosClienteComponent implements OnInit {
   loading = true;
 
   constructor(
-    private svc: AgendamentosService, private auth: AuthService,
-    private dialog: MatDialog, private snack: MatSnackBar
+    private agSvc: AgendamentosService,
+    private petSvc: PetsService,
+    private auth: AuthService,
+    private dialog: MatDialog,
+    private snack: MatSnackBar
   ) {}
 
   ngOnInit() { this.load(); }
 
   load() {
     const cid = this.auth.user()?.clienteId;
-    if (!cid) return;
-    this.svc.listarPorCliente(cid).subscribe(ags => {
-      this.ativos = ags.filter(a => !['CANCELADO','CONCLUIDO'].includes(a.status))
-        .sort((a,b) => new Date(a.dataHoraInicio).getTime() - new Date(b.dataHoraInicio).getTime());
-      this.historico = ags.filter(a => ['CANCELADO','CONCLUIDO'].includes(a.status))
-        .sort((a,b) => new Date(b.dataHoraInicio).getTime() - new Date(a.dataHoraInicio).getTime());
+    if (!cid) {
       this.loading = false;
+      return;
+    }
+
+    this.petSvc.listarPorCliente(cid).pipe(
+      switchMap(pets => {
+        if (!pets.length) return of([] as Agendamento[][]);
+        return forkJoin(pets.map(p => this.agSvc.listarPorPet(p.id)));
+      })
+    ).subscribe({
+      next: (resultados) => {
+        const todos = (resultados as Agendamento[][])
+          .flat()
+          .filter((ag, idx, arr) => arr.findIndex(x => x.id === ag.id) === idx);
+
+        this.ativos = todos
+          .filter(a => !['CANCELADO', 'CONCLUIDO'].includes(a.status))
+          .sort((a, b) => new Date(a.dataHoraInicio).getTime() - new Date(b.dataHoraInicio).getTime());
+
+        this.historico = todos
+          .filter(a => ['CANCELADO', 'CONCLUIDO'].includes(a.status))
+          .sort((a, b) => new Date(b.dataHoraInicio).getTime() - new Date(a.dataHoraInicio).getTime());
+
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
     });
   }
 
   openCancelar(ag: Agendamento) {
     const ref = this.dialog.open(CancelarDialogComponent, { width: '420px', data: { ag } });
-    ref.afterClosed().subscribe(r => { if (r) { this.snack.open('Agendamento cancelado!', '', { duration: 2500 }); this.load(); } });
+    ref.afterClosed().subscribe(r => {
+      if (r) { this.snack.open('Agendamento cancelado!', '', { duration: 2500 }); this.load(); }
+    });
   }
 
   statusLabel(s: string) {
-    return ({ PENDENTE:'Pendente', CONFIRMADO:'Confirmado', EM_ANDAMENTO:'Em andamento', CONCLUIDO:'Concluído', CANCELADO:'Cancelado' } as any)[s] ?? s;
+    return ({ PENDENTE: 'Pendente', CONFIRMADO: 'Confirmado', EM_ANDAMENTO: 'Em andamento', CONCLUIDO: 'Concluído', CANCELADO: 'Cancelado' } as Record<string, string>)[s] ?? s;
   }
 }
