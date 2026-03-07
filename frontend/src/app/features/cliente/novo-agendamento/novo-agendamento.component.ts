@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';  
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -19,7 +19,7 @@ const HORARIOS = ['08:00','09:00','10:00','11:00','13:00','14:00','15:00','16:00
 @Component({
   selector: 'app-novo-agendamento',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatStepperModule, MatButtonModule, MatCardModule,
+  imports: [CommonModule, FormsModule, RouterModule, MatStepperModule, MatButtonModule, MatCardModule,  
     MatIconModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule],
   template: `
     <div>
