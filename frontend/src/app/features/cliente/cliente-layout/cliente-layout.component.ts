@@ -37,7 +37,7 @@ const NAV = [
         </nav>
 
         <span class="spacer"></span>
-        <span class="user-name">{{ auth.user()?.nome?.split(' ')[0] }}</span>
+        <span class="user-name">{{ firstName }}</span>
         <button mat-icon-button (click)="auth.logout()" matTooltip="Sair">
           <mat-icon>logout</mat-icon>
         </button>
@@ -74,5 +74,11 @@ const NAV = [
 })
 export class ClienteLayoutComponent {
   navItems = NAV;
+
+  get firstName(): string {
+    const nome = this.auth.user()?.nome;
+    return nome ? nome.split(' ')[0] : '';
+  }
+
   constructor(public auth: AuthService) {}
 }

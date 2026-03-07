@@ -9,7 +9,7 @@ export interface LoginResponse {
   nome: string;
   email: string;
   tipoUsuario: 'ADMIN' | 'FUNCIONARIO' | 'CLIENTE';
-  clienteId?: number;
+  clienteId?: number; 
 }
 
 export interface Usuario {

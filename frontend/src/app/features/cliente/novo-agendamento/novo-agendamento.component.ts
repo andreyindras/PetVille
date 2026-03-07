@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';  
+import { Router, RouterModule } from '@angular/router';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
 import { ServicosService, PetsService, AgendamentosService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Servico, Pet } from '../../../shared/models';
@@ -19,7 +19,7 @@ const HORARIOS = ['08:00','09:00','10:00','11:00','13:00','14:00','15:00','16:00
 @Component({
   selector: 'app-novo-agendamento',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, MatStepperModule, MatButtonModule, MatCardModule,  
+  imports: [CommonModule, FormsModule, RouterModule, MatStepperModule, MatButtonModule, MatCardModule,
     MatIconModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule],
   template: `
     <div>
@@ -190,13 +190,17 @@ export class NovoAgendamentoComponent implements OnInit {
 
   ngOnInit() {
     const cid = this.auth.user()?.clienteId;
-    forkJoin([this.svSvc.listarAtivos(), cid ? this.ptSvc.listarPorCliente(cid) : [] as any]).subscribe(([sv, pt]) => {
-      this.servicos = sv; this.pets = pt; this.loading = false;
+    const pets$ = cid ? this.ptSvc.listarPorCliente(cid) : of<Pet[]>([]);
+
+    forkJoin([this.svSvc.listarAtivos(), pets$]).subscribe(([sv, pt]) => {
+      this.servicos = sv;
+      this.pets = pt;
+      this.loading = false;
     });
   }
 
-  get servicoSelecionado() { return this.servicos.find(s => s.id === this.servicoId); }
-  get petSelecionado()     { return this.pets.find(p => p.id === this.petId); }
+  get servicoSelecionado(): Servico | undefined { return this.servicos.find(s => s.id === this.servicoId); }
+  get petSelecionado(): Pet | undefined         { return this.pets.find(p => p.id === this.petId); }
 
   agendar() {
     this.saving = true; this.error = '';
