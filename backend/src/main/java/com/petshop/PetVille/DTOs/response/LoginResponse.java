@@ -7,5 +7,6 @@ public record LoginResponse(
         Long usuarioId,
         String nome,
         String email,
-        TipoUsuario tipoUsuario
+        TipoUsuario tipoUsuario,
+        Long clienteId
 ) {}

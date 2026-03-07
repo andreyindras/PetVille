@@ -1,13 +1,10 @@
 package com.petshop.PetVille.controllers;
 
 import com.petshop.PetVille.domain.Cliente;
-import com.petshop.PetVille.domain.Usuario;
-import com.petshop.PetVille.domain.enums.TipoUsuario;
 import com.petshop.PetVille.DTOs.request.ClienteRequest;
 import com.petshop.PetVille.DTOs.request.ClienteUpdateRequest;
 import com.petshop.PetVille.DTOs.response.ClienteResponse;
 import com.petshop.PetVille.services.ClienteService;
-import com.petshop.PetVille.services.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,31 +18,22 @@ import java.util.List;
 public class ClienteController {
 
     private final ClienteService clienteService;
-    private final UsuarioService usuarioService;
 
-    public ClienteController(ClienteService clienteService, UsuarioService usuarioService) {
+    public ClienteController(ClienteService clienteService) {
         this.clienteService = clienteService;
-        this.usuarioService = usuarioService;
     }
 
     @PostMapping
     public ResponseEntity<ClienteResponse> cadastrar(@RequestBody @Valid ClienteRequest request) {
-        Usuario usuario = Usuario.builder()
-                .nome(request.nome())
-                .email(request.email())
-                .senha(request.senha())
-                .tipoUsuario(TipoUsuario.CLIENTE)
-                .build();
-
-        Usuario usuarioCriado = usuarioService.criarUsuario(usuario);
-
-        Cliente dadosCliente = Cliente.builder()
-                .cpf(request.cpf())
-                .endereco(request.endereco())
-                .telefone(request.telefone())
-                .build();
-
-        Cliente criado = clienteService.cadastrarCliente(usuarioCriado.getId(), dadosCliente);
+        // Tudo em uma única transação: cria Usuario + Cliente juntos
+        Cliente criado = clienteService.registrarNovoCliente(
+                request.nome(),
+                request.email(),
+                request.senha(),
+                request.cpf(),
+                request.telefone(),
+                request.endereco()
+        );
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -58,11 +46,11 @@ public class ClienteController {
 
     @GetMapping
     public ResponseEntity<List<ClienteResponse>> listarTodos() {
-        List<ClienteResponse> clientes = clienteService.listarTodosClientes()
-                .stream()
-                .map(ClienteResponse::from)
-                .toList();
-        return ResponseEntity.ok(clientes);
+        return ResponseEntity.ok(
+                clienteService.listarTodosClientes().stream()
+                        .map(ClienteResponse::from)
+                        .toList()
+        );
     }
 
     @GetMapping("/{id}")
@@ -74,7 +62,6 @@ public class ClienteController {
     public ResponseEntity<ClienteResponse> atualizar(
             @PathVariable Long id,
             @RequestBody @Valid ClienteUpdateRequest request) {
-
         Cliente atualizado = clienteService.atualizarCliente(id, request.endereco(), request.telefone());
         return ResponseEntity.ok(ClienteResponse.from(atualizado));
     }

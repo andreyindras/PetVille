@@ -6,7 +6,9 @@ import com.petshop.PetVille.domain.enums.TipoUsuario;
 import com.petshop.PetVille.exception.RecursoNaoEncontradoException;
 import com.petshop.PetVille.exception.RegraNegocioException;
 import com.petshop.PetVille.repositories.ClienteRepository;
+import com.petshop.PetVille.repositories.UsuarioRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,11 +18,56 @@ import java.util.List;
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
-    private final UsuarioService usuarioService;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public ClienteService(ClienteRepository clienteRepository, UsuarioService usuarioService) {
+    public ClienteService(ClienteRepository clienteRepository,
+                          UsuarioRepository usuarioRepository,
+                          PasswordEncoder passwordEncoder) {
         this.clienteRepository = clienteRepository;
-        this.usuarioService = usuarioService;
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    /**
+     * Cria usuario + cliente em uma única transação.
+     * Evita problemas de flush/commit entre transações separadas.
+     */
+    @Transactional
+    public Cliente registrarNovoCliente(String nome, String email, String senha,
+                                        String cpf, String telefone, String endereco) {
+        // Validações
+        if (usuarioRepository.existsByEmail(email)) {
+            throw new RegraNegocioException("Email já cadastrado");
+        }
+        if (cpf == null || cpf.trim().isEmpty()) {
+            throw new RegraNegocioException("CPF é obrigatório");
+        }
+        if (clienteRepository.existsByCpf(cpf)) {
+            throw new RegraNegocioException("CPF já cadastrado no sistema");
+        }
+
+        // Cria e persiste o Usuario dentro da mesma transação
+        Usuario usuario = Usuario.builder()
+                .nome(nome)
+                .email(email)
+                .senha(passwordEncoder.encode(senha))
+                .tipoUsuario(TipoUsuario.CLIENTE)
+                .dataCadastro(LocalDateTime.now())
+                .build();
+        usuario = usuarioRepository.save(usuario);
+
+        // Cria e persiste o Cliente linkado ao Usuario
+        Cliente cliente = Cliente.builder()
+                .usuario(usuario)
+                .cpf(cpf)
+                .telefone(telefone)
+                .endereco(endereco)
+                .dataCadastro(LocalDateTime.now())
+                .ativo(true)
+                .build();
+
+        return clienteRepository.save(cliente);
     }
 
     @Transactional
@@ -35,7 +82,9 @@ public class ClienteService {
             throw new RegraNegocioException("Este usuário já possui um perfil de cliente cadastrado");
         }
 
-        Usuario usuario = usuarioService.buscarUsuarioPorId(usuarioId);
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
+
         if (usuario.getTipoUsuario() != TipoUsuario.CLIENTE) {
             throw new RegraNegocioException("Somente usuários do tipo CLIENTE podem ter perfil de cliente");
         }
@@ -70,20 +119,14 @@ public class ClienteService {
     public Cliente atualizarCliente(Long id, String endereco, String telefone) {
         Cliente cliente = buscarClientePorId(id);
 
-        if (endereco != null && !endereco.isBlank()) {
-            cliente.setEndereco(endereco);
-        }
-
-        if (telefone != null && !telefone.isBlank()) {
-            cliente.setTelefone(telefone);
-        }
+        if (endereco != null && !endereco.isBlank()) cliente.setEndereco(endereco);
+        if (telefone != null && !telefone.isBlank()) cliente.setTelefone(telefone);
 
         return clienteRepository.save(cliente);
     }
 
     @Transactional
     public void deletarCliente(Long id) {
-        Cliente cliente = buscarClientePorId(id);
-        clienteRepository.delete(cliente);
+        clienteRepository.delete(buscarClientePorId(id));
     }
 }
