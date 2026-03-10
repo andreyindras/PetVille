@@ -1,39 +1,417 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 
 html {
   height: 100%;
-  @include mat.theme(
-    (
-      color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
-      ),
-      typography: Roboto,
-      density: 0,
-    )
-  );
+  @include mat.theme((
+    color: (
+      primary: mat.$orange-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    typography: DM Sans,
+    density: 0,
+  ));
+}
+
+:root {
+  --pv-orange:        #d4621e;
+  --pv-orange-dark:   #b85319;
+  --pv-orange-light:  #fdf4ee;
+  --pv-orange-mid:    #fde8d5;
+
+  --pv-950: #0c0a09;
+  --pv-900: #1c1917;
+  --pv-800: #292524;
+  --pv-700: #44403c;
+  --pv-500: #78716c;
+  --pv-400: #a8a29e;
+  --pv-300: #d6d3d1;
+  --pv-200: #e7e5e4;
+  --pv-100: #f5f5f4;
+  --pv-50:  #fafaf9;
+
+  --pv-success-bg:  #dcfce7;
+  --pv-success-fg:  #166534;
+  --pv-warning-bg:  #fef9c3;
+  --pv-warning-fg:  #854d0e;
+  --pv-info-bg:     #dbeafe;
+  --pv-info-fg:     #1e40af;
+  --pv-error-bg:    #fee2e2;
+  --pv-error-fg:    #991b1b;
+  --pv-progress-bg: #fde68a;
+  --pv-progress-fg: #92400e;
+
+  --shadow-xs:  0 1px 2px rgba(0,0,0,.05);
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 12px rgba(0,0,0,.08);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,.10);
+  --shadow-xl:  0 16px 48px rgba(0,0,0,.14);
+
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
+  --radius-full: 999px;
+
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
   color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
+  background-color: var(--pv-50);
+  color: var(--pv-900);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
   margin: 0;
   height: 100%;
+  -webkit-font-smoothing: antialiased;
 }
-/* You can add global styles to this file, and also import other style files */
+
+html { height: 100%; }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--pv-900);
+  margin: 0;
+}
+
+p { margin: 0; }
+
+.page-container {
+  padding: 32px 36px;
+
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+  }
+}
+
+.page-header {
+  margin-bottom: 28px;
+
+  h1 {
+    font-size: 1.625rem;
+    font-weight: 700;
+    color: var(--pv-900);
+    margin: 0 0 3px;
+  }
+
+  p {
+    color: var(--pv-500);
+    font-size: 0.875rem;
+    margin: 0;
+  }
+}
+
+.card-table {
+  background: white;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--pv-200);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--pv-100);
+  flex-wrap: wrap;
+  background: white;
+
+  .search-field {
+    flex: 1;
+    min-width: 200px;
+  }
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mat-mdc-header-row {
+  background: var(--pv-50) !important;
+}
+
+.mat-mdc-header-cell {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  color: var(--pv-500) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid var(--pv-200) !important;
+  white-space: nowrap;
+}
+
+.mat-mdc-cell {
+  font-size: 0.875rem !important;
+  color: var(--pv-900) !important;
+  padding: 14px 16px !important;
+  border-bottom: 1px solid var(--pv-100) !important;
+  vertical-align: middle;
+}
+
+.mat-mdc-row:last-child .mat-mdc-cell {
+  border-bottom: none !important;
+}
+
+.mat-mdc-row {
+  transition: background 0.12s var(--ease-smooth);
+  cursor: default;
+
+  &:hover {
+    background: var(--pv-50) !important;
+  }
+}
+
+.mat-column-acoes {
+  width: 140px;
+  text-align: right !important;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+
+  &.PENDENTE     { background: var(--pv-warning-bg);  color: var(--pv-warning-fg); }
+  &.CONFIRMADO   { background: var(--pv-info-bg);     color: var(--pv-info-fg); }
+  &.EM_ANDAMENTO { background: var(--pv-progress-bg); color: var(--pv-progress-fg); }
+  &.CONCLUIDO    { background: var(--pv-success-bg);  color: var(--pv-success-fg); }
+  &.CANCELADO    { background: var(--pv-error-bg);    color: var(--pv-error-fg); }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px 32px;
+  color: var(--pv-400);
+  gap: 8px;
+  text-align: center;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    opacity: 0.35;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--pv-400);
+  }
+}
+
+.error-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--pv-error-bg);
+  color: var(--pv-error-fg);
+  border: 1px solid #fecaca;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+  animation: slideIn 0.2s var(--ease-smooth);
+}
+
+.success-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--pv-success-bg);
+  color: var(--pv-success-fg);
+  border: 1px solid #bbf7d0;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+  animation: slideIn 0.2s var(--ease-smooth);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.mat-mdc-form-field {
+  &.mat-form-field-appearance-outline {
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: var(--pv-200) !important;
+    }
+
+    &:not(.mat-focused):hover {
+      .mdc-notched-outline__leading,
+      .mdc-notched-outline__notch,
+      .mdc-notched-outline__trailing {
+        border-color: var(--pv-300) !important;
+      }
+    }
+  }
+}
+
+.mat-mdc-icon-button {
+  color: var(--pv-400) !important;
+  transition: color 0.15s, background 0.15s !important;
+
+  &:hover {
+    color: var(--pv-700) !important;
+    background: var(--pv-100) !important;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--pv-100) 25%, var(--pv-200) 50%, var(--pv-100) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+.pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--pv-100);
+  font-size: 0.8rem;
+  color: var(--pv-500);
+
+  .page-info {
+    margin-right: 8px;
+  }
+
+  button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--pv-200);
+    background: white;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--pv-700);
+    transition: all 0.15s;
+    font-size: 0.8rem;
+
+    &:hover:not(:disabled) {
+      background: var(--pv-50);
+      border-color: var(--pv-300);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &.active {
+      background: var(--pv-orange);
+      border-color: var(--pv-orange);
+      color: white;
+    }
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--pv-300);
+  border-radius: 3px;
+
+  &:hover {
+    background: var(--pv-400);
+  }
+}
+
+.table-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: var(--pv-900);
+  --mdc-snackbar-supporting-text-color: white;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.mat-mdc-dialog-container {
+  .mdc-dialog__surface {
+    border-radius: var(--radius-xl) !important;
+    box-shadow: var(--shadow-xl) !important;
+  }
+}
+
+.mat-mdc-dialog-title {
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  color: var(--pv-900) !important;
+  letter-spacing: -0.01em !important;
+  padding: 20px 24px 8px !important;
+}
+
+.mat-mdc-dialog-content {
+  padding: 8px 24px 16px !important;
+}
+
+.mat-mdc-dialog-actions {
+  padding: 8px 20px 16px !important;
+  gap: 8px;
+}
+
+
+.mat-mdc-tooltip {
+  font-size: 0.75rem !important;
+  border-radius: var(--radius-sm) !important;
+}
