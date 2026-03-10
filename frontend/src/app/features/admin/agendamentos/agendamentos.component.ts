@@ -13,7 +13,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { AgendamentosService, FuncionariosService } from '../../../core/services/api.service';
 import { Agendamento, Funcionario } from '../../../shared/models';
 
-// ─── Atribuir Funcionário Dialog ─────────────────────────────────────────────
 @Component({
   selector: 'app-atribuir-dialog',
   standalone: true,
@@ -85,7 +84,6 @@ export class AtribuirDialogComponent {
   }
 }
 
-// ─── Main Component ──────────────────────────────────────────────────────────
 @Component({
   selector: 'app-agendamentos',
   standalone: true,
@@ -104,7 +102,6 @@ export class AtribuirDialogComponent {
 
       <div class="card-table">
 
-        <!-- Toolbar -->
         <div class="toolbar-row">
           <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
             <mat-label>Buscar por pet, serviço ou funcionário</mat-label>
@@ -129,7 +126,6 @@ export class AtribuirDialogComponent {
           </button>
         </div>
 
-        <!-- Skeleton -->
         @if (loading) {
           <div class="skeleton-table">
             @for (i of skeletonRows; track i) {
@@ -145,7 +141,6 @@ export class AtribuirDialogComponent {
           </div>
         } @else {
 
-          <!-- Table -->
           <div class="table-scroll-wrapper">
             <table mat-table [dataSource]="paged">
 
@@ -241,7 +236,6 @@ export class AtribuirDialogComponent {
             </div>
           }
 
-          <!-- Pagination -->
           @if (filtered.length > pageSize) {
             <div class="pagination-row">
               <span class="page-info">
@@ -316,7 +310,6 @@ export class AgendamentosComponent implements OnInit {
   cols = ['data', 'pet', 'servico', 'funcionario', 'status', 'acoes'];
   skeletonRows = [1,2,3,4,5,6,7,8];
 
-  // Pagination
   page = 1;
   pageSize = 10;
   totalPages = 1;
@@ -374,7 +367,6 @@ export class AgendamentosComponent implements OnInit {
     const start = (this.page - 1) * this.pageSize;
     this.paged = this.filtered.slice(start, start + this.pageSize);
 
-    // Show max 7 page buttons
     const maxBtn = 7;
     const half = Math.floor(maxBtn / 2);
     let from = Math.max(1, this.page - half);

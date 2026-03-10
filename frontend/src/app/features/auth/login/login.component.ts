@@ -33,7 +33,6 @@ import { AuthService } from '../../../core/services/auth.service';
 
         <mat-tab-group [(selectedIndex)]="tabIndex" animationDuration="200ms" class="tabs">
 
-          <!-- ===== ABA LOGIN ===== -->
           <mat-tab label="Entrar">
             <div class="tab-body">
               <form [formGroup]="loginForm" (ngSubmit)="submitLogin()">
@@ -72,7 +71,6 @@ import { AuthService } from '../../../core/services/auth.service';
             </div>
           </mat-tab>
 
-          <!-- ===== ABA CADASTRO ===== -->
           <mat-tab label="Criar conta">
             <div class="tab-body">
               <form [formGroup]="registerForm" (ngSubmit)="submitRegister()">

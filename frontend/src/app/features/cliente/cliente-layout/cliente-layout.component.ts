@@ -19,7 +19,6 @@ const NAV = [
   template: `
     <div class="layout">
 
-      <!-- ── Top Navbar ── -->
       <header class="navbar">
         <div class="navbar-inner">
 
@@ -53,7 +52,6 @@ const NAV = [
         </div>
       </header>
 
-      <!-- ── Mobile Bottom Nav ── -->
       <nav class="bottom-nav" aria-label="Menu mobile">
         @for (item of navItems; track item.path) {
           <a [routerLink]="item.path" routerLinkActive="bottom-active" class="bottom-item">
@@ -67,7 +65,6 @@ const NAV = [
         </a>
       </nav>
 
-      <!-- ── Content ── -->
       <main class="main">
         <div class="main-inner">
           <router-outlet />
@@ -76,7 +73,6 @@ const NAV = [
     </div>
   `,
   styles: [`
-    /* Zera qualquer margin/padding herdado */
     :host {
       display: block;
       height: 100vh;
@@ -94,7 +90,7 @@ const NAV = [
     .navbar {
       background: white;
       border-bottom: 1px solid #e7e5e4;
-      flex-shrink: 0;          /* nunca encolhe */
+      flex-shrink: 0;      
       height: 58px;
       z-index: 100;
       box-shadow: 0 1px 3px rgba(0,0,0,.04);
@@ -114,12 +110,14 @@ const NAV = [
       display: flex; align-items: center; gap: 8px;
       text-decoration: none; margin-right: 32px; flex-shrink: 0;
     }
+
     .brand-icon {
       width: 32px; height: 32px; background: #d4621e;
       border-radius: 9px; display: flex; align-items: center; justify-content: center;
       box-shadow: 0 2px 6px rgba(212,98,30,.3);
       mat-icon { color: white; font-size: 17px; width: 17px; height: 17px; }
     }
+      
     .brand-name { font-weight: 700; font-size: 1rem; color: #1c1917; letter-spacing: -0.02em; }
 
     .nav-links { display: flex; align-items: center; gap: 2px; flex: 1; }

@@ -10,6 +10,7 @@ import { catchError } from 'rxjs/operators';
 import { AgendamentosService, ClientesService, PetsService } from '../../../core/services/api.service';
 import { Agendamento } from '../../../shared/models';
 
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -95,7 +96,6 @@ import { Agendamento } from '../../../shared/models';
           </div>
         </div>
 
-        <!-- Recentes -->
         <div class="card-table">
           <div class="toolbar-row">
             <div class="tbl-title">

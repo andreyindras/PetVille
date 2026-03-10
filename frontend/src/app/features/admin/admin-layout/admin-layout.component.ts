@@ -22,7 +22,6 @@ const NAV = [
   template: `
     <div class="layout-root">
 
-      <!-- ======= SIDEBAR ======= -->
       <aside class="sidebar" role="navigation" aria-label="Menu lateral">
 
         <div class="sidebar-brand">
@@ -64,10 +63,8 @@ const NAV = [
         </div>
       </aside>
 
-      <!-- ======= MAIN ======= -->
       <div class="main-wrapper">
 
-        <!-- Top Bar -->
         <header class="top-bar">
           <div class="breadcrumb">
             <span class="bc-root">PetVille</span>
@@ -92,7 +89,6 @@ const NAV = [
       background: var(--pv-50, #fafaf9);
     }
 
-    /* ── Sidebar ── */
     .sidebar {
       width: 232px;
       min-width: 232px;
@@ -166,7 +162,6 @@ const NAV = [
 
     .nav-label { font-size: 0.835rem; font-weight: 500; white-space: nowrap; }
 
-    /* Footer */
     .sidebar-footer {
       padding: 8px 7px 12px;
       border-top: 1px solid rgba(255,255,255,0.07);
@@ -212,13 +207,11 @@ const NAV = [
       &:hover { color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.1); }
     }
 
-    /* ── Main Wrapper ── */
     .main-wrapper {
       flex: 1; display: flex; flex-direction: column;
       overflow: hidden; min-width: 0;
     }
 
-    /* ── Top Bar ── */
     .top-bar {
       height: 50px; min-height: 50px;
       background: white;
@@ -243,10 +236,8 @@ const NAV = [
       text-transform: capitalize;
     }
 
-    /* ── Main Content ── */
     .main-content { flex: 1; overflow-y: auto; overflow-x: hidden; }
 
-    /* ── Shared child styles ── */
     :host ::ng-deep .page-container {
       padding: 28px 32px;
     }

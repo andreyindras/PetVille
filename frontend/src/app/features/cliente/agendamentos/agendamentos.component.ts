@@ -152,7 +152,7 @@ export class CancelarDialogComponent {
     .zero-state { text-align:center; padding:64px 32px; color:#a8a29e; }
     .zero-state mat-icon { font-size:48px; width:48px; height:48px; margin-bottom:12px; display:block; }
     .zero-state p { margin-bottom:16px; }
-    /* status chips */
+  
     .status-chip { display:inline-block; padding:3px 10px; border-radius:999px; font-size:.75rem; font-weight:500; }
     .status-chip.PENDENTE     { background:#fef9c3; color:#854d0e; }
     .status-chip.CONFIRMADO   { background:#dbeafe; color:#1e40af; }
